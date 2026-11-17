@@ -1,0 +1,41 @@
+---
+interface Props {
+  size?: number;
+  color?: string;
+  rotate?: number;
+  points?: number;
+  class?: string;
+}
+const {
+  size = 90,
+  color = 'var(--powder-blue)',
+  rotate = 0,
+  points = 10,
+  class: className,
+} = Astro.props;
+
+const pts = Array.from({ length: points * 2 }, (_, i) => {
+  const r = i % 2 === 0 ? 50 : 19;
+  const a = (Math.PI * i) / points - Math.PI / 2;
+  return `${(50 + r * Math.cos(a)).toFixed(2)},${(50 + r * Math.sin(a)).toFixed(2)}`;
+}).join(' ');
+---
+
+<svg
+  class:list={['star', className]}
+  viewBox="0 0 100 100"
+  width={size}
+  height={size}
+  aria-hidden="true"
+  focusable="false"
+  style={`transform: rotate(${-rotate}deg)`}
+>
+  <polygon points={pts} fill={color} />
+</svg>
+
+<style>
+  .star {
+    display: block;
+    pointer-events: none;
+  }
+</style>

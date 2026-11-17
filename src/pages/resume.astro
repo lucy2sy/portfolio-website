@@ -1,0 +1,225 @@
+---
+// Figma: Resume — Sticker Zine (30:176)
+// 이력서 내용이 바뀌면 아래 sections / skills 데이터만 고치면 됨
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Star from '../components/Star.astro';
+import { site } from '../data/site';
+
+const sections = [
+  {
+    label: 'Education',
+    entries: [
+      {
+        title: 'Honours Bachelor of Arts',
+        date: 'Sep 2024 – Apr 2028',
+        sub: 'University of Toronto Scarborough · Major in New Media (Student Representative), Minors in Statistics and Economics\nCertificate: Google UX Design (Coursera, in progress)\nAward: U of T International Scholar Award ($100,000, merit-based), Sep 2024',
+        bullets: [],
+      },
+    ],
+  },
+  {
+    label: 'Projects',
+    entries: [
+      {
+        title: 'UofT Pathfinder',
+        date: 'May 2026 – present',
+        sub: 'UI/UX Lead & Frontend Developer',
+        bullets: [
+          'Led the interactive prototype and node-based Course Tree UI in Figma with 2 peer designers to make prerequisites and degree requirements clear.',
+          'Mapped 20+ prerequisite paths and a 6-state course status system (Completed, In Progress, Planned, Available, Locked, Excluded).',
+          'Built the authentication and onboarding flow with Supabase Auth; designed a mentoring flow that hides contact info until a request is accepted.',
+        ],
+      },
+      {
+        title: 'Roomie Receipts',
+        date: 'Nov 2025 – Nov 2026',
+        sub: 'UI/UX Designer & Frontend Developer',
+        bullets: [
+          'Designed and shipped a no-login bill-splitting web app in React (Vite) on Cloudflare Pages that roommates used to split real groceries, furniture and trips.',
+          'Audited v1 against WCAG 2.2 and redesigned it: new type system, AA contrast (e.g. 1.8:1 to 9.9:1) and mobile layouts, raising Lighthouse accessibility from 88–96 to 100.',
+          'Fixed money-accuracy bugs with integer-cent math, a visible leftover-cent choice and server-side sum checks; secured data with Supabase Row Level Security.',
+        ],
+      },
+    ],
+  },
+  {
+    label: 'Experience',
+    entries: [
+      {
+        title: 'AKCSE',
+        date: 'May 2025 – present',
+        sub: 'Association of Korean-Canadian Scientists and Engineers · Product Development Co-Director (Apr 2026 – present), Programming Executive (May 2025 – Apr 2026)',
+        bullets: [
+          'Co-direct 5 developers and designers building UofT Pathfinder, running bi-weekly sprints and setting product roadmaps from MVP to release.',
+          'Designed a scalable Figma design system with reusable components and tokens to smooth handoff from mockups to frontend code.',
+          'Built and deployed the chapter website in Next.js and Tailwind CSS, and connected Supabase and the Google Calendar API to automate event scheduling.',
+        ],
+      },
+    ],
+  },
+];
+
+const skills = [
+  ['Design & Research', ['Figma', 'Adobe CC', 'Prototyping', 'Design Systems', 'Usability Testing', 'WCAG 2.2 Audits']],
+  ['Frontend', ['React (Vite)', 'Next.js', 'TypeScript', 'JavaScript', 'Tailwind CSS', 'Supabase (Postgres, RLS)', 'Git', 'HTML/CSS']],
+  ['AI-assisted workflow', ['Claude', 'Gemini', 'AI-assisted prototyping & debugging']],
+  ['Data & Domain', ['Financial UX', 'Behavioral Economics', 'Data Visualization', 'Quantitative Analysis (R, Python)']],
+] as const;
+---
+
+<BaseLayout title="Resume — Lucy Lee" active="resume" description="Resume of Lucy (Siyoung) Lee, product design student at the University of Toronto.">
+  <!-- HEADER -->
+  <section class="panel panel--cream header" aria-labelledby="resume-title">
+    <div>
+      <h1 id="resume-title" class="word-title">resume</h1>
+    </div>
+    <div class="download">
+      <a href={site.resumePdf} class="dl-btn" download>Download PDF</a>
+      <p class="kicker">One page · updated {site.resumeUpdated}</p>
+    </div>
+    <Star class="r-star" size={96} rotate={-12} />
+  </section>
+
+  <!-- BODY -->
+  <section class="panel panel--cream body" aria-label="Resume details">
+    {sections.map((s) => (
+      <div class="section">
+        <h2 class="s-label">{s.label}</h2>
+        <div class="entries">
+          {s.entries.map((e) => (
+            <article class="entry">
+              <div class="title-row">
+                <h3>{e.title}</h3>
+                <p class="kicker">{e.date}</p>
+              </div>
+              <p class="sub">{e.sub}</p>
+              {e.bullets.length > 0 && (
+                <ul class="bullets">
+                  {e.bullets.map((b) => <li>{b}</li>)}
+                </ul>
+              )}
+            </article>
+          ))}
+        </div>
+      </div>
+    ))}
+  </section>
+
+  <!-- SKILLS -->
+  <section class="panel panel--blue" aria-labelledby="skills-title">
+    <h2 id="skills-title" class="skills-title">Skills</h2>
+    <dl class="skills">
+      {skills.map(([group, items]) => (
+        <div class="skill-row">
+          <dt class="kicker">{group}</dt>
+          <dd>
+            <ul class="reset chips">
+              {items.map((it) => <li>{it}</li>)}
+            </ul>
+          </dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+</BaseLayout>
+
+<style>
+  /* HEADER */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 40px 48px;
+  }
+  .download { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+  .dl-btn {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: 1.625rem;
+    text-transform: uppercase;
+    padding: 14px 20px;
+    text-decoration: none;
+  }
+  .dl-btn:hover { background: var(--oxblood); }
+  :global(.r-star) { position: absolute; right: 280px; top: 24px; }
+
+  /* BODY */
+  .body { padding: 16px 48px 48px; }
+  .section {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 48px;
+    padding: 32px 0;
+    border-bottom: 1px solid var(--ink);
+  }
+  .section:last-child { border-bottom: 0; }
+  .s-label {
+    margin: 0;
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: 2.5rem;
+    line-height: 1.3;
+    text-transform: uppercase;
+    color: var(--oxblood);
+  }
+  .entries { display: flex; flex-direction: column; gap: 32px; }
+  .entry { display: flex; flex-direction: column; gap: 8px; }
+  .title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .title-row h3 {
+    margin: 0;
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: 1.875rem;
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+  .sub { margin: 0; font-weight: 500; font-size: 1.0625rem; line-height: 1.45; white-space: pre-line; }
+  .bullets { margin: 0; padding-left: 1.1em; line-height: 1.6; }
+  .bullets li + li { margin-top: 4px; }
+
+  /* SKILLS */
+  .skills-title {
+    margin: 0;
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: clamp(2.5rem, 4.4vw, 4rem);
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+  .skills { margin: 24px 0 0; display: flex; flex-direction: column; gap: 24px; }
+  .skill-row {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 40px;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid var(--ink);
+  }
+  .skill-row dd { margin: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips li {
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    padding: 6px 12px;
+    font-weight: 500;
+    font-size: 0.9375rem;
+  }
+
+  @media (max-width: 900px) {
+    .header { padding: 28px 20px; }
+    .download { align-items: flex-start; }
+    :global(.r-star) { right: 20px; top: 20px; width: 64px; height: 64px; }
+    .body { padding: 8px 20px 24px; }
+    .section, .skill-row { grid-template-columns: 1fr; gap: 12px; }
+  }
+</style>

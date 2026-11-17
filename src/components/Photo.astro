@@ -1,0 +1,47 @@
+---
+
+interface Props {
+  src?: string;
+  alt?: string;
+  label?: string;
+  tone?: 'blue' | 'oxblood' | 'cocoa' | 'ink';
+  ratio?: string;
+  fit?: 'cover' | 'contain';
+}
+const { src, alt = '', label = '[Image]', tone = 'blue', ratio = '4 / 3', fit = 'cover' } = Astro.props;
+---
+
+{src ? (
+  <img class="photo" src={src} alt={alt} loading="lazy" decoding="async" style={`aspect-ratio:${ratio};object-fit:${fit}`} />
+) : (
+  <div class={`photo ph ph--${tone}`} style={`aspect-ratio:${ratio}`}>
+    <span>{label}</span>
+  </div>
+)}
+
+<style>
+  .photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: var(--cream);
+  }
+  img.photo {
+    border: 2px solid var(--ink);
+  }
+  .ph {
+    display: grid;
+    place-items: center;
+    padding: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    text-align: center;
+    white-space: pre-line;
+  }
+  .ph--blue { background: var(--powder-blue); color: var(--ink); }
+  .ph--oxblood { background: var(--oxblood); color: var(--cream); }
+  .ph--cocoa { background: var(--cocoa); color: var(--cream); }
+  .ph--ink { background: var(--ink); color: var(--cream); }
+</style>

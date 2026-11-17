@@ -1,0 +1,113 @@
+---
+
+interface Props {
+  active?: string;
+}
+const { active } = Astro.props;
+
+const links = [
+  { id: 'work', label: 'Work', href: '/work' },
+  { id: 'about', label: 'About', href: '/about' },
+  { id: 'resume', label: 'Resume', href: '/resume' },
+  { id: 'contact', label: 'Contact', href: '/contact' },
+];
+---
+
+<header class="container">
+  <nav class="nav" aria-label="Main">
+    <a href="/" class="wordmark">lucy lee</a>
+
+    <ul class="links">
+      {links.map((link) => (
+        <li>
+          <a
+            href={link.href}
+            class:list={['label', { active: active === link.id }]}
+            aria-current={active === link.id ? 'page' : undefined}
+          >
+            {link.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <a href="/contact" class="status mono">Open to Summer 2027 ↗</a>
+  </nav>
+</header>
+
+<style>
+  header {
+    padding-top: var(--page-gutter);
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px 32px;
+    background: var(--cream);
+    border-radius: var(--radius);
+    padding: 20px 40px;
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-size: 2.75rem;
+    line-height: 1;
+    color: var(--oxblood);
+    text-decoration: none;
+  }
+
+  .links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .links a {
+    display: inline-block;
+    padding: 10px 0;
+    font-size: 1.25rem;
+    text-decoration: none;
+  }
+
+  .links a:hover,
+  .links a.active {
+    color: var(--oxblood);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
+  }
+
+  .status {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 8px 16px;
+    text-decoration: none;
+  }
+
+  @media (max-width: 768px) {
+    .nav {
+      padding: 16px 20px;
+    }
+    .wordmark {
+      font-size: 2rem;
+    }
+    .links {
+      order: 3;
+      width: 100%;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .links a {
+      font-size: 1.0625rem;
+    }
+    .status {
+      font-size: 0.6875rem;
+      padding: 6px 10px;
+    }
+  }
+</style>

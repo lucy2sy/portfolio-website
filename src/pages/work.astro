@@ -1,0 +1,212 @@
+---
+// Figma: Work — Sticker Zine (30:59)
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Star from '../components/Star.astro';
+import Photo from '../components/Photo.astro';
+import { site } from '../data/site';
+import { project } from '../data/projects'; // 사진 경로는 src/data/projects.ts 에서 수정
+
+const roomie = project('roomie-receipts');
+const pathfinder = project('pathfinder');
+const akcse = project('akcse');
+
+const filters = [
+  { id: 'all', label: 'All' },
+  { id: 'case-study', label: 'Case study' },
+  { id: 'in-progress', label: 'In progress' },
+  { id: 'website', label: 'Website' },
+];
+---
+
+<BaseLayout title="Work — Lucy Lee" active="work" description="Selected product design work by Lucy Lee: Roomie Receipts, UofT Pathfinder and the AKCSE UofT website.">
+  <!-- HEADER -->
+  <section class="panel panel--cream header" aria-labelledby="work-title">
+    <div>
+      <h1 id="work-title" class="word-title">work</h1>
+    </div>
+    <div class="filters-wrap">
+      <p class="count">Three projects,<br />2025–2026</p>
+      <div class="filters" role="group" aria-label="Filter projects">
+        {filters.map((f, i) => (
+          <button type="button" class:list={['chip', { 'chip--solid': i === 0 }]} data-filter={f.id} aria-pressed={i === 0 ? 'true' : 'false'}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+    </div>
+    <Star class="w-star" size={100} rotate={12} />
+  </section>
+
+  <!-- 01 ROOMIE RECEIPTS -->
+  <article id="roomie-receipts" class="panel panel--blue project" data-tags="case-study" aria-labelledby="p1">
+    <div class="sticker-card shot" style="--tilt:2deg">
+      <Photo src={roomie.image} label={roomie.placeholder} tone={roomie.tone} ratio="600 / 420" alt={roomie.alt} />
+    </div>
+    <div class="text">
+      <ul class="reset tags">
+        <li class="chip chip--solid">01 · Case study</li>
+        <li class="chip">Fintech UX</li>
+        <li class="chip">Accessibility</li>
+      </ul>
+      <h2 id="p1" class="p-title">Roomie Receipts</h2>
+      <p class="p-desc">Revisiting my first shipped bill-splitting app a year later: every cent accounted for, data protected without logins, and accessibility rebuilt from the ground up.</p>
+      <p class="mono">Lighthouse 88–96 → 100 · contrast 1.8:1 → 9.9:1</p>
+      <a href="/work/roomie-receipts" class="btn">Read the case study ↗</a>
+    </div>
+  </article>
+
+  <!-- 02 PATHFINDER -->
+  <article id="pathfinder" class="panel panel--oxblood project project--flip" data-tags="in-progress" aria-labelledby="p2">
+    <div class="text">
+      <ul class="reset tags">
+        <li class="chip chip--light">02 · In progress</li>
+      </ul>
+      <h2 id="p2" class="p-title">UofT Pathfinder</h2>
+      <p class="p-desc">An academic planning platform that turns tangled prerequisites into a node-based course tree with six course states, plus a mentoring flow that keeps contact info private until a request is accepted.</p>
+      <ul class="meta-list">
+        <li><span class="k">Role</span><span class="v">UI/UX Lead & Frontend Developer</span></li>
+        <li><span class="k">Timeline</span><span class="v">May 2026 – present</span></li>
+        <li><span class="k">Team</span><span class="v">2 peer designers, within a 5-person AKCSE team</span></li>
+        <li><span class="k">Tools</span><span class="v">Figma · Supabase Auth</span></li>
+      </ul>
+      {/* 프로세스 페이지가 생기면 아래를 <a href="/work/pathfinder" class="btn btn--cream">See the process ↗</a> 로 바꾸기 */}
+      <span class="chip chip--light soon">Process page coming soon</span>
+    </div>
+    <div class="sticker-card shot" style="--tilt:-2deg">
+      <Photo src={pathfinder.image} label={pathfinder.placeholder} tone="blue" ratio="600 / 420" alt={pathfinder.alt} />
+    </div>
+    <Star class="p-star" size={90} rotate={-10} />
+  </article>
+
+  <!-- 03 AKCSE -->
+  <article id="akcse" class="panel panel--cream project" data-tags="website" aria-labelledby="p3">
+    <div class="sticker-card shot" style="--tilt:1deg">
+      <Photo src={akcse.image} label={akcse.placeholder} tone={akcse.tone} ratio="600 / 380" alt={akcse.alt} />
+    </div>
+    <div class="text">
+      <ul class="reset tags">
+        <li class="chip chip--solid">03 · Website</li>
+      </ul>
+      <h2 id="p3" class="p-title">AKCSE UofT Website</h2>
+      <p class="p-desc">The chapter's official website, responsive and accessible, with events pulled automatically from Google Calendar so the executive team stopped updating them by hand.</p>
+      <ul class="meta-list">
+        <li><span class="k">Role</span><span class="v">Programming Executive</span></li>
+        <li><span class="k">Timeline</span><span class="v">September 2025 – January 2026</span></li>
+        <li><span class="k">Tools</span><span class="v">Next.js · Tailwind CSS · Supabase · Google Calendar API</span></li>
+      </ul>
+      <a href={site.akcse} class="btn" target="_blank" rel="noopener">Visit akcseuoft.ca ↗<span class="visually-hidden"> (opens in a new tab)</span></a>
+    </div>
+  </article>
+
+  <p class="empty visually-hidden" role="status" aria-live="polite"></p>
+</BaseLayout>
+
+<script>
+  // 필터 칩: 누르면 해당 태그 프로젝트만 보여줌
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+  const projects = document.querySelectorAll<HTMLElement>('[data-tags]');
+  const status = document.querySelector('.empty');
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const f = btn.dataset.filter;
+      buttons.forEach((b) => {
+        const on = b === btn;
+        b.setAttribute('aria-pressed', String(on));
+        b.classList.toggle('chip--solid', on);
+      });
+      let shown = 0;
+      projects.forEach((p) => {
+        const match = f === 'all' || p.dataset.tags?.split(' ').includes(f!);
+        p.hidden = !match;
+        if (match) shown++;
+      });
+      if (status) status.textContent = `Showing ${shown} project${shown === 1 ? '' : 's'}`;
+    });
+  });
+</script>
+
+<style>
+  /* HEADER */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 40px 48px;
+  }
+  .filters-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 16px; }
+  .count {
+    margin: 0;
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: clamp(2rem, 3.3vw, 3rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+    text-align: right;
+  }
+  .filters { display: flex; flex-wrap: wrap; gap: 10px; }
+  .filters .chip { cursor: pointer; }
+  .filters .chip:not(.chip--solid):hover { background: var(--powder-blue); }
+  :global(.w-star) { position: absolute; left: 47%; top: 30px; }
+
+  /* PROJECT ROWS */
+  .project {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 56px;
+    align-items: center;
+    padding: 56px 48px;
+  }
+  .project--flip { grid-template-columns: 1fr 1.1fr; }
+  .project[hidden] { display: none; }
+  .shot { padding: 12px; }
+  .text { display: flex; flex-direction: column; gap: 16px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .p-title {
+    margin: 0;
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: clamp(2.75rem, 5vw, 4.5rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+  .p-desc { margin: 0; font-size: 1.1875rem; line-height: 1.55; max-width: 560px; }
+
+  .metrics { display: flex; flex-wrap: wrap; gap: 12px; }
+  .metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--cream);
+    border: 2px solid var(--ink);
+    padding: 14px 16px;
+    transform: rotate(var(--tilt));
+  }
+  .metric strong {
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: 2.75rem;
+    line-height: 1.3;
+    color: var(--oxblood);
+  }
+  .metric span {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .soon { align-self: flex-start; border-style: dashed; }
+  :global(.p-star) { position: absolute; right: 40px; top: -30px; }
+
+  @media (max-width: 1000px) {
+    .project, .project--flip { grid-template-columns: 1fr; gap: 32px; padding: 32px 20px; }
+    .project--flip .shot { order: -1; }
+    .header { padding: 28px 20px; }
+    .filters-wrap { align-items: flex-start; }
+    .count { text-align: left; }
+    :global(.w-star) { left: auto; right: 20px; top: 20px; width: 64px; height: 64px; }
+  }
+</style>

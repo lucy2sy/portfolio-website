@@ -1,0 +1,467 @@
+---
+// Figma: Case study / Roomie Receipts — Sticker Zine (33:119)
+// URL: /work/roomie-receipts
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Star from '../../components/Star.astro';
+import Photo from '../../components/Photo.astro';
+import { site } from '../../data/site';
+
+// ===== 스크린샷 경로 =====
+// public/images/roomie/ 폴더에 파일을 넣고 아래 '' 안에 경로를 적으면 박스가 사진으로 바뀜
+// 경로는 '/images/...'로 시작 ('public'은 빼기!)
+const img = {
+  hero: '/images/roomie/v2_screenshot1.png',
+  v1Create: '/images/roomie/v1_screenshot2.png',
+  v1Split: '/images/roomie/v1_screenshot3.png',
+  v1Mobile1: '/images/roomie/v1_mobile1.png',
+  v2Mobile1: '/images/roomie/v2_mobile1.png',
+  split: '/images/roomie/v2_screenshot3.png',
+  share: '/images/roomie/v2_screenshot4.png',
+  v1Mobile2: '/images/roomie/v1_mobile2.png',
+  v2Mobile2: '/images/roomie/v2_mobile2.png',
+};
+
+const labels = {
+  hero: '[v2 landing page · desktop]\nscreenshot1.png',
+  v1Create: '[v1 create receipt · desktop]\nv1-screenshot2.png',
+  v1Split: '[v1 split screen · desktop]\nv1-screenshot3.png',
+};
+
+const features = [
+  ['No login', 'Create a receipt, add names, and get a share link immediately.'],
+  ['Two split modes', 'Split equally, or enter custom amounts. With two people, one amount fills the other.'],
+  ['Share flow', 'Copy the link, or a ready-made friendly reminder for the group chat.'],
+  ['Retro style', 'Bungee type and bold outlines to make money talk feel lighter.'],
+];
+
+const findings = [
+  {
+    title: 'Accessibility',
+    items: [
+      'Body text in an ultra-thin, all-caps display face',
+      'Contrast as low as 1.8:1 (AA needs 4.5:1)',
+      'Inputs with placeholders but no labels',
+      'Checkboxes and history items unreachable by keyboard',
+      'Errors only as browser alert() pop-ups',
+    ],
+    tilt: 1,
+  },
+  {
+    title: 'Money accuracy',
+    items: [
+      '$10.00 split three ways gave $3.33 each: one cent vanished',
+      'Custom splits could save without adding up',
+      'Totals were never saved: a missing column, and the error was ignored',
+    ],
+    tilt: -1,
+  },
+  {
+    title: 'Privacy & trust',
+    items: [
+      'The README promised local-only privacy; receipts actually lived in Supabase',
+      'Row Level Security was off, so the public key could read every row',
+      "Advertised receipt scanning and PDF export that didn't exist",
+    ],
+    tilt: -1,
+  },
+  {
+    title: 'Device support',
+    items: [
+      'Designed and tested only on laptops',
+      'Only the landing page adapted to small screens, though people split bills on their phones',
+    ],
+    tilt: 1,
+  },
+];
+
+type Shot = { src: string; label: string; alt: string };
+const decisions: { title: string; options: string; shipped: string; why: string; shots: Shot[]; tone: 'oxblood' | 'cocoa'; tilt: number }[] = [
+  {
+    title: 'Keep the fun,\nfix the legibility',
+    options: 'Drop the retro style · keep it everywhere · display text only',
+    shipped: 'Bungee only for headings and buttons; Space Grotesk for body, inputs and amounts; no text-stroke.',
+    why: 'Every text colour now passes 4.5:1. The receipt title went from 2.1:1 to 5.9:1.',
+    shots: [
+      { src: img.v1Mobile1, label: '[v1 landing · mobile]\nv1_mobile1.png', alt: 'v1 landing page on a phone: thin all-caps text with low contrast' },
+      { src: img.v2Mobile1, label: '[v2 landing · mobile]\nv2_mobile1.png', alt: 'v2 landing page on a phone: readable body font and stronger contrast' },
+    ],
+    tone: 'oxblood',
+    tilt: 1,
+  },
+  {
+    title: 'Make every\ncent visible',
+    options: 'Round silently · give the cent at random · show it and let people choose',
+    shipped: 'Integer-cent math. “1¢ left over: who covers it?” with a dropdown, and a live “left to assign” counter.',
+    why: 'In money UX, trust comes from totals that always add up. The server re-checks the sum too.',
+    shots: [{ src: img.split, label: '[v2 split · 1¢ left over]\nscreenshot3.png', alt: 'v2 split screen asking who covers the 1 cent left over' }],
+    tone: 'cocoa',
+    tilt: -1,
+  },
+  {
+    title: 'Be honest about\nwhere data lives',
+    options: 'Add accounts · secure the database · store everything locally',
+    shipped: '“The link is the key”: three single-receipt Postgres functions, RLS on, and a plain privacy note.',
+    why: 'No-login was the core value, so the fix belongs in the system and the copy, not in more friction.',
+    shots: [{ src: img.share, label: '[v2 share screen · privacy note]\nscreenshot4.png', alt: 'v2 share screen with a privacy note explaining that anyone with the link can view the receipt' }],
+    tone: 'oxblood',
+    tilt: 1,
+  },
+  {
+    title: 'Make it work\non phones',
+    options: 'Shrink the desktop layout · build a separate app · responsive layouts',
+    shipped: 'Below 768px: stacked sections, full-width buttons, 44px tap targets, 16px inputs, number keypads.',
+    why: 'Splitting usually happens right after paying, phone in hand.',
+    shots: [
+      { src: img.v1Mobile2, label: '[v1 create · mobile]\nv1_mobile2.png', alt: 'v1 create receipt form squeezed onto a phone screen' },
+      { src: img.v2Mobile2, label: '[v2 create · mobile]\nv2_mobile2.png', alt: 'v2 create receipt form with stacked full-width fields on a phone' },
+    ],
+    tone: 'cocoa',
+    tilt: -1,
+  },
+];
+
+const scores = [
+  { page: 'Landing', v1: 88 },
+  { page: 'Create receipt', v1: 96 },
+  { page: 'History', v1: 96 },
+];
+---
+
+<BaseLayout
+  title="Roomie Receipts case study — Lucy Lee"
+  active="work"
+  description="Case study: revisiting Roomie Receipts a year later to fix accessibility, cent-accurate splitting and data privacy."
+>
+  <!-- HERO -->
+  <section class="panel panel--cream hero" aria-labelledby="cs-title">
+    <div class="crumbs">
+      <a href="/work" class="kicker">← All work</a>
+      <p class="kicker">Case study 01 · Fintech UX · Accessibility</p>
+    </div>
+    <div class="title-row">
+      <h1 id="cs-title" class="wordmark">roomie<br />receipts</h1>
+      <p class="tagline">Splitting shared bills without the awkward conversation.</p>
+    </div>
+    <dl class="meta">
+      <div><dt class="kicker">Role</dt><dd>Solo UI/UX Designer<br />& Frontend Developer</dd></div>
+      <div><dt class="kicker">Timeline</dt><dd>v1 Nov 2025 – Feb 2026<br />v2 Nov 2026</dd></div>
+      <div><dt class="kicker">Tools</dt><dd>Figma · React (Vite)<br />Supabase · Cloudflare Pages</dd></div>
+      <div><dt class="kicker">Live</dt><dd><a href={site.roomieLive} target="_blank" rel="noopener">roomie-receipts.pages.dev ↗<span class="visually-hidden"> (opens in a new tab)</span></a></dd></div>
+    </dl>
+    <div class="sticker-card hero-shot" style="--tilt:1deg">
+      <Photo src={img.hero} label={labels.hero} alt="Roomie Receipts v2 landing page on desktop" ratio="1200 / 640" />
+    </div>
+    <Star class="h-star" size={110} rotate={10} />
+  </section>
+
+  <!-- 01 PROBLEM -->
+  <section class="panel panel--oxblood split-section" aria-labelledby="s1">
+    <div>
+      <h2 id="s1" class="s-title">The<br />problem</h2>
+    </div>
+    <div class="stack">
+      <p class="body-lg">Living with roommates meant constant small shared costs: grocery runs, furniture for the house, trips together. Keeping track of who paid for what was harder than it should be, and asking a roommate to pay me back felt even more awkward.</p>
+      <p class="body-lg">Existing tools like Splitwise required everyone to download an app and create an account. For a quick grocery split, that setup felt like more effort than the problem deserved.</p>
+      <div class="goal">
+        <p class="kicker">Goal</p>
+        <p class="goal-text">Split a bill and share it with roommates in under a minute. No app download, no sign-up.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 V1 -->
+  <section class="panel panel--cream" aria-labelledby="s2">
+    <div class="sec-head">
+      <div>
+        <h2 id="s2" class="s-title oxblood">v1: What I shipped</h2>
+      </div>
+      <p class="side-note">Used by my roommates and friends<br />for groceries, furniture and trips.</p>
+    </div>
+    <div class="v1">
+      <dl class="features">
+        {features.map(([k, v]) => (
+          <div><dt class="kicker">{k}</dt><dd>{v}</dd></div>
+        ))}
+      </dl>
+      <div class="v1-shots">
+        <div class="sticker-card pad12" style="--tilt:2deg">
+          <Photo src={img.v1Create} label={labels.v1Create} alt="v1 create receipt screen on desktop" tone="cocoa" ratio="360 / 240" />
+        </div>
+        <div class="sticker-card pad12" style="--tilt:-1deg">
+          <Photo src={img.v1Split} label={labels.v1Split} alt="v1 split screen on desktop" tone="cocoa" ratio="360 / 240" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 AUDIT -->
+  <section class="panel panel--blue" aria-labelledby="s3">
+    <div class="sec-head">
+      <div>
+        <h2 id="s3" class="s-title">Auditing v1,<br />one year later</h2>
+      </div>
+      <p class="aside">After learning WCAG in class, I reviewed v1's code and design with fresh eyes. It worked for my friends, but not for everyone.</p>
+    </div>
+    <ol class="reset findings">
+      {findings.map((f, i) => (
+        <li class="sticker-card finding" style={`--tilt:${f.tilt}deg`}>
+          <h3 class="card-title">{f.title}</h3>
+          <ul class="dots">
+            {f.items.map((it) => <li>{it}</li>)}
+          </ul>
+        </li>
+      ))}
+    </ol>
+    <Star class="s3-star" size={100} rotate={-14} color="var(--oxblood)" />
+  </section>
+
+  <!-- 04 DECISIONS -->
+  <section class="panel panel--cream" aria-labelledby="s4">
+    <div class="sec-head">
+      <div>
+        <h2 id="s4" class="s-title oxblood">Four decisions</h2>
+      </div>
+      <p class="side-note">each keeps v1's personality<br />while fixing what the audit found</p>
+    </div>
+    <ol class="reset decisions">
+      {decisions.map((d, i) => (
+        <li class="decision">
+          <span class="d-num" aria-hidden="true">{i + 1}</span>
+          <div class="d-text">
+            <h3 class="d-title">{d.title}</h3>
+            <dl class="d-rows">
+              <div><dt class="kicker">Options</dt><dd>{d.options}</dd></div>
+              <div><dt class="kicker shipped">Shipped</dt><dd class="strong">{d.shipped}</dd></div>
+              <div><dt class="kicker">Why</dt><dd>{d.why}</dd></div>
+            </dl>
+          </div>
+          <div class="sticker-card pad12 d-shot" style={`--tilt:${d.tilt}deg`}>
+            <div class:list={['shots', { pair: d.shots.length > 1 }]}>
+              {d.shots.map((s) => (
+                <Photo src={s.src} label={s.label} alt={s.alt} tone={d.tone} ratio={d.shots.length > 1 ? '9 / 16' : '520 / 330'} fit="contain" />
+              ))}
+            </div>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <!-- 05 OUTCOME -->
+  <section class="panel panel--oxblood" aria-labelledby="s5">
+    <div class="sec-head">
+      <div>
+        <h2 id="s5" class="s-title">Outcome</h2>
+      </div>
+      <p class="side-note blue">v2 shipped Nov 9, 2026,<br />live at the same link.</p>
+    </div>
+    {/* 같은 "100" 카드 3장 대신 표 하나 */}
+    <div class="sticker-card score-card" style="--tilt:-1deg">
+      <table class="scores">
+        <caption class="kicker">Lighthouse accessibility score</caption>
+        <thead>
+          <tr><th scope="col" class="kicker">Screen</th><th scope="col" class="kicker">v1</th><th scope="col" class="kicker">v2</th></tr>
+        </thead>
+        <tbody>
+          {scores.map((sc) => (
+            <tr><th scope="row">{sc.page}</th><td class="old">{sc.v1}</td><td class="new">100</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="body-lg outcome-note">The scores understate the change. Automated checks can't tell that v1's checkboxes were unreachable by keyboard, that its hairline text was hard to read, or that its numbers didn't add up. Those were found by reading the code and testing by hand.</p>
+    <div class="next-grid">
+      <div class="card-box cream" style="--tilt:1deg">
+        <p class="kicker">What testers said</p>
+        <h3 class="box-title oxblood">Roommates & friends, real splits</h3>
+        <ul class="dots">
+          <li>No login was the favourite part: they could start right away.</li>
+          <li>The copy-a-friendly-reminder button stood out. Nobody had to write the “you owe me” message themselves.</li>
+          <li>They asked for item-level splits for groceries, and named line items (gas, Uber, desk, sofa) for trips and furniture.</li>
+        </ul>
+      </div>
+      <div class="card-box blue" style="--tilt:-1deg">
+        <p class="kicker">What's next · v3</p>
+        <h3 class="box-title">From one total to a list of items</h3>
+        <p>Both requests point the same way: named items, each split among the people who shared it. v2's cent-accurate math is the foundation, since each item is split in integer cents before the totals are added up.</p>
+      </div>
+    </div>
+    <Star class="s5-star" size={90} rotate={12} />
+  </section>
+
+  <!-- 06 REFLECTION -->
+  <section class="split-section bare" aria-labelledby="s6">
+    <div>
+      <h2 id="s6" class="reflect-title">what a year<br />changed</h2>
+    </div>
+    <p class="body-lg">v1 taught me to ship fast; revisiting it taught me what fast had skipped. A design can feel delightful to its maker and still exclude people who rely on keyboards, screen readers or good contrast. And when an app handles money, “close enough” rounding and vague privacy claims quietly erode trust. Next time, accessibility and data honesty are part of the first draft, not a later fix.</p>
+  </section>
+
+  <!-- NEXT -->
+  <nav class="panel panel--blue next" aria-label="More work">
+    <a href="/work" class="kicker">← All work</a>
+    <a href="/work#pathfinder" class="next-link">
+      <span class="kicker">Next project</span>
+      <span class="next-title">UofT Pathfinder</span>
+      <span aria-hidden="true" class="next-arrow">↗</span>
+    </a>
+  </nav>
+</BaseLayout>
+
+<style>
+  p, h2, h3, dl, dd { margin: 0; }
+
+  /* HERO */
+  .hero { display: flex; flex-direction: column; gap: 32px; padding: 40px 48px 48px; }
+  .crumbs { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .crumbs a { text-decoration: none; }
+  .crumbs a:hover { text-decoration: underline; }
+  .title-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(4rem, 13.2vw, 11.875rem); /* 최대 190px */
+    line-height: 0.88;
+    color: var(--oxblood);
+  }
+  .tagline {
+    max-width: 345px;
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: clamp(2rem, 3.6vw, 3.25rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+    text-align: right;
+  }
+  .meta { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .meta > div { border-top: 1px solid var(--ink); padding-top: 14px; display: flex; flex-direction: column; gap: 6px; padding-right: 16px; }
+  .meta dd { font-weight: 500; font-size: 1.0625rem; line-height: 1.4; }
+  .meta a { text-underline-offset: 3px; }
+  .hero-shot { padding: 12px; margin: 8px 18px 0; }
+  :global(.h-star) { position: absolute; right: 50px; top: 40px; }
+
+  /* 공통 섹션 */
+  .s-title {
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: clamp(2.75rem, 5.6vw, 5rem);
+    line-height: 0.92;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+  .oxblood { color: var(--oxblood); }
+  .num-blue { color: var(--powder-blue); }
+  .side-note.blue { color: var(--powder-blue); }
+  .sec-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 40px; }
+  .sec-head .side-note, .aside { max-width: 384px; }
+  .aside { font-size: 1.125rem; line-height: 1.55; }
+  .split-section { display: grid; grid-template-columns: 300px 1fr; gap: 64px; padding: 64px 48px; }
+  .stack { display: flex; flex-direction: column; gap: 20px; max-width: 760px; }
+  .pad12 { padding: 12px; }
+  .dots { margin: 0; padding-left: 1.1em; line-height: 1.6; }
+  .dots li + li { margin-top: 2px; }
+  .card-title {
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: 2.5rem;
+    line-height: 1.3;
+    text-transform: uppercase;
+    color: var(--oxblood);
+    margin-bottom: 12px;
+  }
+
+  /* 01 */
+  .goal { background: var(--powder-blue); color: var(--ink); padding: 16px 20px; display: flex; flex-direction: column; gap: 6px; }
+  .goal-text { font-family: var(--font-label); font-weight: 600; font-size: 1.875rem; line-height: 1.1; }
+
+  /* 02 */
+  .v1 { display: grid; grid-template-columns: 440px 1fr; gap: 48px; align-items: center; }
+  .features > div { padding: 14px 0; border-bottom: 1px solid var(--ink); display: flex; flex-direction: column; gap: 4px; }
+  .features dd { font-size: 1.125rem; line-height: 1.5; }
+  .v1-shots { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+
+  /* 03 */
+  .findings { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+  .finding { padding: 28px 24px 24px; font-size: 1.0625rem; }
+  :global(.s3-star) { position: absolute; right: -10px; top: -30px; }
+
+  /* 04 */
+  .decisions { border-top: 0; }
+  .decision {
+    display: grid;
+    grid-template-columns: 90px 1fr 548px;
+    gap: 40px;
+    align-items: center;
+    padding: 40px 0;
+    border-top: 1px solid var(--ink);
+  }
+  .d-num { font-family: var(--font-display); font-size: 7.5rem; line-height: 0.9; color: var(--oxblood); }
+  .d-text { display: flex; flex-direction: column; gap: 16px; }
+  .d-title { font-family: var(--font-label); font-weight: 700; font-size: 2.75rem; line-height: 0.95; text-transform: uppercase; white-space: pre-line; }
+  .d-rows { display: flex; flex-direction: column; gap: 16px; }
+  .d-rows > div { display: grid; grid-template-columns: 90px 1fr; gap: 16px; }
+  .d-rows dt { padding-top: 3px; }
+  .d-rows dd { font-size: 1.0625rem; line-height: 1.5; }
+  .d-rows .shipped { color: var(--oxblood); font-weight: 700; }
+  .d-rows .strong { font-weight: 500; }
+  .shots.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-height: 330px; }
+  .shots.pair :global(.photo) { max-height: 330px; }
+
+  /* 05 */
+  .score-card { padding: 24px 28px; max-width: 720px; }
+  /* 글이 많은 카드는 똑바로, 기울기는 이미지에만 */
+  .finding, .score-card { transform: none; }
+  .scores { width: 100%; border-collapse: collapse; }
+  .scores caption { text-align: left; padding-bottom: 8px; }
+  .scores th, .scores td { text-align: left; padding: 8px 0; border-bottom: 1px solid var(--ink); }
+  .scores tbody tr:last-child > * { border-bottom: 0; }
+  .scores tbody th { font-family: var(--font-label); font-weight: 600; font-size: 1.75rem; text-transform: uppercase; }
+  .scores .old { font-family: var(--font-label); font-size: 1.75rem; text-decoration: line-through; opacity: 0.7; }
+  .scores .new { font-family: var(--font-display); font-size: clamp(2.5rem, 4vw, 3.75rem); line-height: 1; color: var(--oxblood); }
+  .outcome-note { max-width: 900px; margin: 40px 0; }
+  .next-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+  .card-box { border: 2px solid var(--ink); padding: 28px; display: flex; flex-direction: column; gap: 14px; color: var(--ink); line-height: 1.55; }
+  .card-box.cream { background: var(--cream); }
+  .card-box.blue { background: var(--powder-blue); }
+  .box-title { font-family: var(--font-label); font-weight: 700; font-size: 2rem; line-height: 1.3; text-transform: uppercase; }
+  :global(.s5-star) { position: absolute; right: 30px; top: -28px; }
+
+  /* 06 */
+  .bare { color: var(--cream); padding: 72px 8px; }
+  .bare .reflect-title { color: var(--powder-blue); }
+  .reflect-title { font-family: var(--font-label); font-weight: 700; text-transform: uppercase; font-size: clamp(2.75rem, 4.4vw, 4rem); line-height: 0.95; color: var(--oxblood); margin-top: 8px; }
+
+  /* NEXT */
+  .next { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding: 28px 48px; }
+  .next a { text-decoration: none; }
+  .next-link { display: flex; align-items: center; gap: 20px; }
+  .next-title { font-family: var(--font-label); font-weight: 700; font-size: clamp(2rem, 3.3vw, 3rem); line-height: 1.3; text-transform: uppercase; }
+  .next-arrow { font-family: var(--font-mono); font-size: 1.25rem; transition: transform 0.2s ease; }
+  .next-link:hover .next-title { text-decoration: underline; text-underline-offset: 6px; }
+  .next-link:hover .next-arrow { transform: translate(3px, -3px); }
+
+  /* 반응형 */
+  @media (max-width: 1100px) {
+    .decision { grid-template-columns: 70px 1fr; }
+    .d-shot { grid-column: 1 / -1; }
+    .d-num { font-size: 5rem; }
+    .v1 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 900px) {
+    .hero, .split-section { padding: 28px 20px; }
+    .tagline { text-align: left; }
+    .meta { grid-template-columns: 1fr 1fr; row-gap: 16px; }
+    .hero-shot { margin: 0; }
+    :global(.h-star) { right: 16px; top: 16px; width: 64px; height: 64px; }
+    .split-section { grid-template-columns: 1fr; gap: 24px; }
+    .findings, .next-grid, .v1-shots { grid-template-columns: 1fr; }
+    .card-box { transform: none; }
+    .goal { transform: none; }
+  }
+  @media (max-width: 600px) {
+    .decision { grid-template-columns: 1fr; gap: 16px; }
+    .d-rows > div { grid-template-columns: 1fr; gap: 2px; }
+    .next { padding: 24px 20px; }
+  }
+</style>
+

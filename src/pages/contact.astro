@@ -1,0 +1,283 @@
+---
+// Figma: Contact — Sticker Zine (31:107)
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Star from '../components/Star.astro';
+import { site } from '../data/site';
+
+const year = new Date().getFullYear();
+// 줄바꿈이 들어간 글자는 여기(위쪽)에서 만들어야 에러가 안 남
+const emailLabel = site.email.replace('@', '@\n');
+---
+
+<BaseLayout title="Contact — Lucy Lee" active="contact" showFooter={false} description="Get in touch with Lucy Lee about Summer 2027 product design internships.">
+  <!-- HERO -->
+  <section class="panel panel--oxblood hero" aria-labelledby="contact-title">
+    <div>
+      <h1 id="contact-title" class="say-hi">hi hi hi</h1>
+    </div>
+    <div class="status">
+      <p class="status-text">Open to Summer 2027<br />product design<br />internships.</p>
+      <p class="kicker">Based in Toronto, ON</p>
+    </div>
+    <Star class="c1" size={120} rotate={8} />
+    <Star class="c2" size={64} rotate={-12} color="var(--cream)" />
+  </section>
+
+  <!-- 이메일 하나를 크게, 나머지는 한 줄로 -->
+  <section class="panel panel--blue ways" aria-labelledby="find-title">
+    <h2 id="find-title" class="kicker">Email works best</h2>
+    <p class="big-email"><a href={`mailto:${site.email}`}>{emailLabel}</a></p>
+    <button type="button" class="btn" data-copy={site.email}>Copy email</button>
+    <p class="visually-hidden" role="status" aria-live="polite" id="copy-status"></p>
+
+    <ul class="reset elsewhere">
+      <li><a href={site.linkedin} target="_blank" rel="noopener">LinkedIn ↗<span class="visually-hidden"> (opens in a new tab)</span></a></li>
+      <li><a href={site.github} target="_blank" rel="noopener">GitHub ↗<span class="visually-hidden"> (opens in a new tab)</span></a></li>
+      <li><a href={site.resumePdf} download>Resume PDF ↓</a></li>
+    </ul>
+  </section>
+
+  <!-- MESSAGE -->
+  <section class="panel panel--cream message" aria-labelledby="note-title">
+    <div class="intro">
+      <h2 id="note-title" class="note-title">or leave a note</h2>
+      <p class="body-lg">If you're hiring a Summer 2027 product design intern, especially on a team that builds tools for money, I'd love to hear about it.</p>
+    </div>
+
+    {/* 서버가 없는 정적 사이트라, 보내기를 누르면 내용이 채워진 이메일 앱이 열려 */}
+    <form class="form" id="note-form" data-to={site.email} data-formspree={site.formspreeId} novalidate>
+      <div class="field">
+        <label for="name" class="kicker">Your name</label>
+        <input id="name" name="name" type="text" autocomplete="name" placeholder="First and last name" required />
+      </div>
+      <div class="field">
+        <label for="email" class="kicker">Your email</label>
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required aria-describedby="email-error" />
+        <p class="error" id="email-error"></p>
+      </div>
+      <div class="field">
+        <label for="msg" class="kicker">Message</label>
+        <textarea id="msg" name="message" rows="6" placeholder="What would you like to talk about?" required aria-describedby="msg-error"></textarea>
+        <p class="error" id="msg-error"></p>
+      </div>
+      <button type="submit" class="send">Send message <span aria-hidden="true">↗</span></button>
+      <p class="kicker hint" id="form-status" role="status" aria-live="polite">
+        {site.formspreeId ? 'Goes straight to my inbox.' : 'Opens your email app with the message filled in.'}
+      </p>
+    </form>
+  </section>
+
+  <div class="fine-print">
+    <p class="kicker credit">© Lucy Lee {year} · Toronto</p>
+    <a href="#top" class="kicker top">Back to top ↑</a>
+  </div>
+</BaseLayout>
+
+<script>
+  // 이메일 복사
+  const status = document.getElementById('copy-status');
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const text = btn.dataset.copy ?? '';
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = 'Copied!';
+        if (status) status.textContent = 'Email address copied';
+      } catch {
+        btn.textContent = text; // 복사가 막힌 브라우저: 주소를 보여줌
+      }
+      setTimeout(() => (btn.textContent = 'Copy email'), 2000);
+    });
+  });
+
+  // 폼 → 이메일 앱 열기
+  const form = document.getElementById('note-form') as HTMLFormElement | null;
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const name = String(data.get('name') ?? '').trim();
+    const email = String(data.get('email') ?? '').trim();
+    const message = String(data.get('message') ?? '').trim();
+
+    const emailInput = form.querySelector<HTMLInputElement>('#email')!;
+    const msgInput = form.querySelector<HTMLTextAreaElement>('#msg')!;
+    const emailErr = document.getElementById('email-error')!;
+    const msgErr = document.getElementById('msg-error')!;
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    emailErr.textContent = emailOk ? '' : 'Please enter a valid email, like you@example.com.';
+    emailInput.setAttribute('aria-invalid', String(!emailOk));
+    msgErr.textContent = message ? '' : 'Please write a short message.';
+    msgInput.setAttribute('aria-invalid', String(!message));
+
+    if (!emailOk) return emailInput.focus();
+    if (!message) return msgInput.focus();
+
+    // Formspree ID가 있으면 메일함으로 바로 전송
+    const formspreeId = form.dataset.formspree;
+    const statusEl = document.getElementById('form-status')!;
+    if (formspreeId) {
+      statusEl.textContent = 'Sending…';
+      try {
+        const res = await fetch(`https://formspree.io/f/${formspreeId}`, {
+          method: 'POST',
+          body: data,
+          headers: { Accept: 'application/json' },
+        });
+        if (!res.ok) throw new Error();
+        form.reset();
+        statusEl.textContent = 'Sent. Thank you, I will get back to you soon.';
+      } catch {
+        statusEl.textContent = `That didn't go through. Please email me at ${form.dataset.to}.`;
+      }
+      return;
+    }
+
+    const to = form.dataset.to ?? '';
+    const subject = encodeURIComponent(`Portfolio note from ${name || email}`);
+    const body = encodeURIComponent(`${message}\n\n— ${name}\n${email}`);
+    window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+  });
+</script>
+
+<style>
+  /* HERO */
+  .hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 48px;
+    overflow: hidden;
+  }
+  .say-hi {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(5rem, 18vw, 16.25rem);
+    line-height: 1.1; /* 'y' 꼬리 안 잘리게 */
+    color: var(--cream);
+  }
+  .status { display: flex; flex-direction: column; align-items: flex-end; gap: 16px; position: relative; z-index: 1; }
+  .status-text {
+    margin: 0;
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: clamp(2rem, 3.6vw, 3.25rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+    text-align: right;
+    color: var(--powder-blue);
+  }
+  :global(.c1) { position: absolute; left: 53%; top: 40px; }
+  :global(.c2) { position: absolute; left: 49%; bottom: 40px; }
+
+  /* EMAIL */
+  .ways { padding: 40px 48px 56px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+  .big-email {
+    margin: 0;
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: clamp(2.75rem, 7.5vw, 7rem);
+    line-height: 0.95;
+    text-transform: lowercase;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+  .big-email a { color: var(--oxblood); text-decoration: none; }
+  .big-email a:hover { text-decoration: underline; text-decoration-thickness: 4px; text-underline-offset: 8px; }
+  .elsewhere {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 32px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 2px solid var(--ink);
+    align-self: stretch;
+  }
+  .elsewhere a {
+    font-family: var(--font-label);
+    font-weight: 600;
+    font-size: 1.75rem;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  .elsewhere a:hover { color: var(--oxblood); text-decoration: underline; text-underline-offset: 5px; }
+
+  /* MESSAGE */
+  .message {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 64px;
+    padding: 56px 48px;
+  }
+  .intro { display: flex; flex-direction: column; gap: 16px; }
+  .note-title {
+    margin: 0;
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: clamp(2.5rem, 4.4vw, 4rem);
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--oxblood);
+  }
+  .form { display: flex; flex-direction: column; gap: 20px; max-width: 700px; }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  input, textarea {
+    font: inherit;
+    font-size: 1.0625rem; /* 16px 이상: iOS 확대 방지 */
+    color: var(--ink);
+    background: var(--cream);
+    border: 2px solid var(--ink);
+    border-radius: 0;
+    padding: 14px 16px;
+  }
+  input::placeholder, textarea::placeholder { color: var(--cocoa); opacity: 1; }
+  textarea { resize: vertical; min-height: 180px; }
+  [aria-invalid='true'] { border-color: #b3261e; }
+  .error { margin: 0; color: #b3261e; font-size: 0.9375rem; min-height: 0; }
+  .error:empty { display: none; }
+  .send {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--ink);
+    color: var(--cream);
+    border: 0;
+    padding: 14px 28px;
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .send:hover { background: var(--oxblood); }
+  .hint { opacity: 0.85; }
+
+  /* FINE PRINT */
+  .fine-print {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 0 8px var(--page-gutter);
+  }
+  .credit { color: var(--powder-blue); }
+  .top { color: var(--cream); text-decoration: none; }
+  .top:hover { text-decoration: underline; }
+
+  @media (max-width: 1100px) {
+    .message { grid-template-columns: 1fr; gap: 32px; }
+  }
+  @media (max-width: 768px) {
+    .hero { padding: 28px 20px; }
+    .status { align-items: flex-start; }
+    .status-text { text-align: left; }
+    :global(.c1) { left: auto; right: 16px; top: 16px; width: 72px; height: 72px; }
+    :global(.c2) { display: none; }
+    .ways, .message { padding: 32px 20px; }
+    .note-title { font-size: 2.5rem; }
+  }
+</style>
