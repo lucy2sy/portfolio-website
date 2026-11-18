@@ -1,4 +1,6 @@
 /* ===== Chic palette — Figma "Chic palette" 변수와 1:1 ===== */
+html, body { overflow-x: clip; }
+
 :root {
   --ink: #231815;
   --oxblood: #4d0e12;
